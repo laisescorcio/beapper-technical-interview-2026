@@ -68,7 +68,7 @@ export function PaymentHistoryScreenView(
       <SmartyText aria-live="polite" className="text-foreground-secondary">
         {statusMessage}
       </SmartyText>
-      {showRefreshButton && (
+      {showRefreshButton && !isRefreshError && (
         <SmartySecondaryButton
           disabled={isPending || isRetryDisabled}
           onPress={handleRefresh}>

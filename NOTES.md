@@ -21,6 +21,10 @@
 
 - Native testing. I couldn't test the React Native app because I don't have an iOS or Android simulator available. I tested the shared screen on web, but native pull-to-refresh still needs to be tested on a device. On native, the list uses `StackRootFlatList` to support pull-to-refresh, while web uses a Refresh button. Both use the same refresh logic.
 
+- Refresh error testing. I added a `refresh-error` mock scenario to test what happens when a refresh fails. The first request loads the payments normally, but the next request for page 0 fails once. This lets me test if the existing payments stay visible and if Retry works correctly.
+
+- Refresh error UI. During testing, I noticed that both Refresh and Retry buttons were visible when a refresh failed. Since both buttons do the same action, I decided to hide Refresh when there is an error and show only Retry. After a successful retry, Refresh appears again.
+
 ### What I Would Improve With More Time
 
 - I would test how the list behaves when the user scrolls very quickly or triggers multiple requests at the same time.
