@@ -19,6 +19,8 @@
 
 - Web scrolling. During testing, the list was loading all pages automatically because the browser was scrolling the document. I added a height limit only to the Payment History page, so the list has its own scroll area. This allows pagination to load more payments when the user scrolls near the end.
 
+- Native testing. I couldn't test the React Native app because I don't have an iOS or Android simulator available. I tested the shared screen on web, but native pull-to-refresh still needs to be tested on a device. On native, the list uses `StackRootFlatList` to support pull-to-refresh, while web uses a Refresh button. Both use the same refresh logic.
+
 ### What I Would Improve With More Time
 
 - I would test how the list behaves when the user scrolls very quickly or triggers multiple requests at the same time.

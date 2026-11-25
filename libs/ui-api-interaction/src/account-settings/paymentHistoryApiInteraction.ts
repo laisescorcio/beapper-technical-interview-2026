@@ -26,9 +26,9 @@ export function usePaymentHistoryApiInteraction() {
         void refetch();
       }
     },
-    onRefresh: () => {
+    onRefresh: (onSuccess?: () => void) => {
       if (!isRequestActive()) {
-        refresh();
+        refresh(undefined, {onSuccess});
       }
     },
   };

@@ -1,6 +1,6 @@
 .viewport [data-testid='payment-history-list'] {
-  /* Leave room for the dashboard padding, header and mobile navigation. */
-  max-height: calc(100dvh - 10rem);
+  /* Leave room for the dashboard padding, header, refresh controls and mobile navigation. */
+  max-height: calc(100dvh - 14rem);
 }
 
 .viewport button:focus-visible,

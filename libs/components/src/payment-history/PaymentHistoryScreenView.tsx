@@ -1,4 +1,4 @@
-import {SmartyFlatList} from '@smarty-app/controls';
+import {SmartyFlatList, SmartyFlatListRenderer} from '@smarty-app/controls';
 import {
   SmartySecondaryButton,
   SmartySkeletonLoading,
@@ -7,8 +7,13 @@ import {
 import {Currency, DateFormat, SmartyDate, SmartyPrice} from '@smarty-app/core';
 import {en} from '@smarty-app/language';
 import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
-import {JSX} from 'react';
+import {JSX, useState} from 'react';
 import {View, ViewProps} from 'react-native';
+
+interface PaymentHistoryScreenViewProps extends ViewProps {
+  List?: SmartyFlatListRenderer;
+  showRefreshButton?: boolean;
+}
 
 /**
  * Main view for PaymentHistoryScreen.
@@ -16,8 +21,15 @@ import {View, ViewProps} from 'react-native';
  * @param props Element properties.
  * @returns JSX.Element
  */
-export function PaymentHistoryScreenView(props: ViewProps): JSX.Element {
-  const {testID = 'payment-history-screen-view', ...rest} = props;
+export function PaymentHistoryScreenView(
+  props: PaymentHistoryScreenViewProps,
+): JSX.Element {
+  const {
+    testID = 'payment-history-screen-view',
+    List = SmartyFlatList,
+    showRefreshButton = false,
+    ...rest
+  } = props;
 
   const {
     payments,
@@ -33,6 +45,12 @@ export function PaymentHistoryScreenView(props: ViewProps): JSX.Element {
     onRetryNextPage,
     onRefresh,
   } = usePaymentHistoryApiInteraction();
+
+  const [listVersion, setListVersion] = useState(0);
+  const handleRefresh = () => {
+    // Start at the top when the refreshed first page replaces the previous pages.
+    onRefresh(() => setListVersion((version) => version + 1));
+  };
 
   const isRetryDisabled = isFetching || isRefreshing;
 
@@ -50,21 +68,34 @@ export function PaymentHistoryScreenView(props: ViewProps): JSX.Element {
       <SmartyText aria-live="polite" className="text-foreground-secondary">
         {statusMessage}
       </SmartyText>
-      {isRefreshError && (
-        <PaymentRetry
-          message={en.paymentHistoryRefreshError}
-          label={en.paymentHistoryRetryRefresh}
-          onRetry={onRefresh}
-          disabled={isFetching}
-        />
+      {showRefreshButton && (
+        <SmartySecondaryButton
+          disabled={isPending || isRetryDisabled}
+          onPress={handleRefresh}>
+          {en.paymentHistoryRefresh}
+        </SmartySecondaryButton>
       )}
       <View
+        className="flex-1"
         aria-hidden={isPending || undefined}
         importantForAccessibility={isPending ? 'no-hide-descendants' : 'auto'}>
-        <SmartyFlatList
+        <List
+          key={listVersion}
           testID="payment-history-list"
           isLoading={isPending}
           data={payments}
+          onRefresh={showRefreshButton ? undefined : handleRefresh}
+          refreshing={isRefreshing}
+          ListHeaderComponent={
+            isRefreshError ? (
+              <PaymentRetry
+                message={en.paymentHistoryRefreshError}
+                label={en.paymentHistoryRetryRefresh}
+                onRetry={handleRefresh}
+                disabled={isRetryDisabled}
+              />
+            ) : null
+          }
           keyExtractor={(payment, index) => payment.id || `missing-id-${index}`}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.2}

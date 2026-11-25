@@ -18,7 +18,7 @@ export default function PaymentHistoryScreen() {
         title: en.paymentHistoryTitle,
       }}>
       <div className={styles.viewport}>
-        <PaymentHistoryScreenView />
+        <PaymentHistoryScreenView showRefreshButton />
       </div>
     </StackRootView>
   );
