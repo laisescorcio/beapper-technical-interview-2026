@@ -82,21 +82,25 @@ I investigated the issue with AI and changed the import to `import type` in `app
 
 After this change, the standard typecheck and lint command passed without additional flags.
 
-## 3. Verification
+## 3. Verification and Testing Limitations
 
-`npx nx run-many -t typecheck lint --skip-nx-cache` passed for all 25 projects on Node 22. There were no TypeScript or ESLint findings. Node emitted a terminal-color warning because both `NO_COLOR` and `FORCE_COLOR` were set.
+### Verification
 
-I checked all five scenarios with the mock API data, React Query, and the interaction handlers:
+I ran `npx nx run-many -t typecheck lint --skip-nx-cache` on Node 22, and all 25 projects passed without TypeScript or ESLint errors.
 
-| Scenario | Verified behavior |
-| --- | --- |
-| `default` | Pages 0–4 returned 100 payments. Page 5 was empty and pagination stopped. Repeated end-of-list calls during a fetch issued one request. |
-| `empty` | Page 0 succeeded with no payments or further requests. |
-| `error` | Page 0 failed once and initial Retry loaded page 0. |
-| `next-page-error` | Pages 1–5 each failed once. Existing payments remained cached and pagination paused until Retry requested the same page. |
-| `refresh-error` | The first refresh preserved both loaded pages. Retry fetched only page 0, replaced the cache, and pagination resumed at page 1. |
+I also checked all five mock scenarios (`default`, `empty`, `error`, `next-page-error`, and `refresh-error`) using the mock API, React Query, and the interaction handlers.
 
-These checks exercised request behavior outside the browser. For a final browser pass, restart the web dev server with each scenario and confirm the visible states, keyboard focus and activation on Retry, screen-reader announcements, and the scroll reset after refresh.
+These checks covered pagination, empty results, request errors, retries, and refresh behavior.
+
+The final automated checks ran outside the browser. I would still verify the visible states, keyboard navigation, screen-reader announcements, and scroll position after refresh in the browser.
+
+### Native Testing
+
+I couldn't test the React Native app because I don't have an iOS or Android simulator available.
+
+I tested the shared screen and refresh behavior on web, but native pull-to-refresh still needs to be tested on a device.
+
+On native, I used `StackRootFlatList` to support pull-to-refresh. On web, I added a Refresh button. Both platforms use the same refresh logic.
 
 ### Native Testing
 
