@@ -1,5 +1,9 @@
 import {SmartyFlatList} from '@smarty-app/controls';
-import {SmartyText} from '@smarty-app/controls-basic';
+import {
+  SmartySecondaryButton,
+  SmartySkeletonLoading,
+  SmartyText,
+} from '@smarty-app/controls-basic';
 import {Currency, DateFormat, SmartyDate, SmartyPrice} from '@smarty-app/core';
 import {en} from '@smarty-app/language';
 import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
@@ -15,25 +19,117 @@ import {View, ViewProps} from 'react-native';
 export function PaymentHistoryScreenView(props: ViewProps): JSX.Element {
   const {testID = 'payment-history-screen-view', ...rest} = props;
 
-  const {payments, isFetching, isRefreshing, onEndReached} =
-    usePaymentHistoryApiInteraction();
+  const {
+    payments,
+    isPending,
+    isFetching,
+    isFetchingNextPage,
+    isRefreshing,
+    isInitialError,
+    isNextPageError,
+    isRefreshError,
+    onEndReached,
+    onRetryInitial,
+    onRetryNextPage,
+    onRefresh,
+  } = usePaymentHistoryApiInteraction();
+
+  const isRetryDisabled = isFetching || isRefreshing;
+
+  let statusMessage = '';
+  if (isPending) {
+    statusMessage = en.paymentHistoryLoading;
+  } else if (isFetchingNextPage) {
+    statusMessage = en.paymentHistoryLoadingMore;
+  } else if (isRefreshing) {
+    statusMessage = en.paymentHistoryRefreshing;
+  }
 
   return (
-    <View
-      testID={testID}
-      {...rest}
-      accessibilityState={{
-        ...rest.accessibilityState,
-        busy: isFetching || isRefreshing,
-      }}>
-      <SmartyFlatList
-        testID="payment-history-list"
-        data={payments}
-        keyExtractor={(payment, index) => payment.id || `missing-id-${index}`}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.2}
-        renderItem={({item}) => <PaymentItem payment={item} />}
-      />
+    <View testID={testID} {...rest}>
+      <SmartyText aria-live="polite" className="text-foreground-secondary">
+        {statusMessage}
+      </SmartyText>
+      {isRefreshError && (
+        <PaymentRetry
+          message={en.paymentHistoryRefreshError}
+          label={en.paymentHistoryRetryRefresh}
+          onRetry={onRefresh}
+          disabled={isFetching}
+        />
+      )}
+      <View
+        aria-hidden={isPending || undefined}
+        importantForAccessibility={isPending ? 'no-hide-descendants' : 'auto'}>
+        <SmartyFlatList
+          testID="payment-history-list"
+          isLoading={isPending}
+          data={payments}
+          keyExtractor={(payment, index) => payment.id || `missing-id-${index}`}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.2}
+          renderItem={({item}) => <PaymentItem payment={item} />}
+          ListEmptyComponent={
+            isInitialError ? (
+              <PaymentRetry
+                message={en.paymentHistoryInitialError}
+                label={en.paymentHistoryRetryInitial}
+                onRetry={onRetryInitial}
+                disabled={isRetryDisabled}
+              />
+            ) : (
+              <SmartyText
+                aria-live="polite"
+                className="text-foreground-primary">
+                {en.paymentHistoryEmpty}
+              </SmartyText>
+            )
+          }
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View aria-hidden importantForAccessibility="no-hide-descendants">
+                <SmartySkeletonLoading className="my-2 h-20 w-full" />
+              </View>
+            ) : isNextPageError ? (
+              <PaymentRetry
+                message={en.paymentHistoryNextPageError}
+                label={en.paymentHistoryRetryNextPage}
+                onRetry={onRetryNextPage}
+                disabled={isRetryDisabled}
+              />
+            ) : null
+          }
+        />
+      </View>
+    </View>
+  );
+}
+
+function PaymentRetry({
+  message,
+  label,
+  onRetry,
+  disabled,
+}: {
+  message: string;
+  label: string;
+  onRetry: () => void;
+  disabled: boolean;
+}): JSX.Element {
+  return (
+    <View className="smarty-gap-xs py-4">
+      <SmartyText
+        role="alert"
+        aria-live="assertive"
+        className="text-foreground-primary">
+        {message}
+      </SmartyText>
+      <SmartySecondaryButton
+        accessibilityLabel={label}
+        disabled={disabled}
+        onPress={onRetry}>
+        {en.paymentHistoryRetry}
+      </SmartySecondaryButton>
     </View>
   );
 }
