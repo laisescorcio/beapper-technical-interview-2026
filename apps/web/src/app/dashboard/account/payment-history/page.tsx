@@ -4,6 +4,8 @@ import {en} from '@smarty-app/language';
 
 import StackRootView from '@/components/common/StackRootView';
 
+import styles from './PaymentHistory.module.css';
+
 /**
  * PaymentHistoryScreen.
  *
@@ -15,7 +17,9 @@ export default function PaymentHistoryScreen() {
       topBarOptions={{
         title: en.paymentHistoryTitle,
       }}>
-      <PaymentHistoryScreenView />
+      <div className={styles.viewport}>
+        <PaymentHistoryScreenView />
+      </div>
     </StackRootView>
   );
 }

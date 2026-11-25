@@ -17,6 +17,8 @@
 
 - Request handling. I chose to use `isRequestActive()` to check if React Query is already fetching payments or refreshing the list. This helps prevent overlapping requests when the user scrolls quickly or tries to refresh while another request is running. It checks the current request state before starting a new action.
 
+- Web scrolling. During testing, the list was loading all pages automatically because the browser was scrolling the document. I added a height limit only to the Payment History page, so the list has its own scroll area. This allows pagination to load more payments when the user scrolls near the end.
+
 ### What I Would Improve With More Time
 
 - I would test how the list behaves when the user scrolls very quickly or triggers multiple requests at the same time.
