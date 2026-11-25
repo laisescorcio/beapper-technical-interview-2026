@@ -8,7 +8,8 @@ import {
 
 import {useDxApi} from '../dxApiWrapper';
 
-const subscriberPaymentQueryKey = ['subscriberPayment'];
+export const subscriberPaymentQueryKey = ['subscriberPayment'];
+export const subscriberPaymentRefreshMutationKey = ['subscriberPaymentRefresh'];
 const pageSize = 20;
 
 function useSubscriberPaymentPageFetchFn() {
@@ -27,6 +28,7 @@ function useSubscriberPaymentPageFetchFn() {
 
 /**
  * Fetch the subscriber's payments in newest-first order.
+ *
  * @returns The infinite query result for payment history.
  */
 export function useSubscriberPaymentQuery() {
@@ -45,6 +47,7 @@ export function useSubscriberPaymentQuery() {
 
 /**
  * Refresh the payment history and restart pagination from the new first page.
+ *
  * @returns The mutation result for refreshing payment history.
  */
 export function useSubscriberPaymentRefreshMutation() {
@@ -52,6 +55,7 @@ export function useSubscriberPaymentRefreshMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: subscriberPaymentRefreshMutationKey,
     mutationFn: () => fetchPage(0),
     onSuccess: (firstPage) => {
       queryClient.setQueryData<InfiniteData<Payment[], number>>(

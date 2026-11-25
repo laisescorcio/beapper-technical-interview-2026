@@ -1,3 +1,4 @@
+import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
 import {JSX} from 'react';
 import {View, ViewProps} from 'react-native';
 
@@ -10,5 +11,16 @@ import {View, ViewProps} from 'react-native';
 export function PaymentHistoryScreenView(props: ViewProps): JSX.Element {
   const {testID = 'payment-history-screen-view', ...rest} = props;
 
-  return <View testID={testID} {...rest} />;
+  const {isFetching, isRefreshing} = usePaymentHistoryApiInteraction();
+
+  return (
+    <View
+      testID={testID}
+      {...rest}
+      accessibilityState={{
+        ...rest.accessibilityState,
+        busy: isFetching || isRefreshing,
+      }}
+    />
+  );
 }

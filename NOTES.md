@@ -14,3 +14,13 @@
 - Web scrolling. I want to check if `SmartyFlatList` works with the existing web layout before making any changes. If `onEndReached` doesn't work as expected, I'll adjust only what's necessary.
 
 - Expo configuration issue. The standard typecheck and lint command failed because Node tried to load `ConfigContext` as a runtime import, but it is only a TypeScript type. I investigated the issue with AI and verified that using `import type` fixes the loading error. The fix is a one-line change in `app.config.ts`, without changing the Nx or Expo setup.
+
+- Request handling. I chose to use `isRequestActive()` to check if React Query is already fetching payments or refreshing the list. This helps prevent overlapping requests when the user scrolls quickly or tries to refresh while another request is running. It checks the current request state before starting a new action.
+
+### What I Would Improve With More Time
+
+- I would test how the list behaves when the user scrolls very quickly or triggers multiple requests at the same time.
+- If I find duplicated requests, I would consider adding an extra guard with `useRef`.
+- I would also review whether additional React Query options are needed to handle overlapping requests.
+
+For this challenge, I decided to start with a simpler solution and use React Query's built-in features.
