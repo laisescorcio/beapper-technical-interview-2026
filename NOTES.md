@@ -28,7 +28,7 @@ I chose a mutation for refresh because the regular `refetch()` from `useInfinite
 
 With the mutation, I request only page 0 and replace the cached pages after a successful response. This avoids duplicated or missing payments when new payments change the order of the list.
 
-If refresh fails, the previous payments stay visible.
+A successful refresh returns the list to the top and pagination resumes at page 1. If refresh fails, the previous payments stay visible.
 
 ### Request Handling
 
@@ -68,23 +68,11 @@ I can test this scenario by running:
 NEXT_PUBLIC_MOCK_API_SCENARIO=refresh-error npx nx dev web
 ```
 
-### Refresh Error UI
+### Refresh Button Visibility
 
-During testing, I noticed that both Refresh and Retry buttons were visible when a refresh failed.
+On web, Refresh appears once payments load. An empty response shows only the empty message, and an initial load error offers Retry.
 
-Since both buttons perform the same action, I decided to hide Refresh when there is an error and show only Retry.
-
-After a successful retry, Refresh appears again.
-
-
-### Empty State UI
-
-During testing, I noticed that the Refresh button was visible even when there were no payments. I decided to hide it in the empty state to keep the screen simple and show only the empty message.
-
-### Initial Load Error UI
-
-During testing, I noticed that both Refresh and Retry were visible when the initial request failed. I decided to show only Retry in this state to avoid having two buttons for the same action. I kept Refresh available in the empty state so users can check for new payments.
-
+If refresh fails, the existing payments stay visible and Retry is the only refresh action shown. When Retry starts, Refresh reappears disabled until the request finishes. If the request fails again, Retry is shown again.
 
 ### Expo Configuration Issue
 
@@ -94,7 +82,21 @@ I investigated the issue with AI and changed the import to `import type` in `app
 
 After this change, the standard typecheck and lint command passed without additional flags.
 
-## 3. Testing Limitations
+## 3. Verification
+
+`npx nx run-many -t typecheck lint --skip-nx-cache` passed for all 25 projects on Node 22. There were no TypeScript or ESLint findings. Node emitted a terminal-color warning because both `NO_COLOR` and `FORCE_COLOR` were set.
+
+I checked all five scenarios with the mock API data, React Query, and the interaction handlers:
+
+| Scenario | Verified behavior |
+| --- | --- |
+| `default` | Pages 0–4 returned 100 payments. Page 5 was empty and pagination stopped. Repeated end-of-list calls during a fetch issued one request. |
+| `empty` | Page 0 succeeded with no payments or further requests. |
+| `error` | Page 0 failed once and initial Retry loaded page 0. |
+| `next-page-error` | Pages 1–5 each failed once. Existing payments remained cached and pagination paused until Retry requested the same page. |
+| `refresh-error` | The first refresh preserved both loaded pages. Retry fetched only page 0, replaced the cache, and pagination resumed at page 1. |
+
+These checks exercised request behavior outside the browser. For a final browser pass, restart the web dev server with each scenario and confirm the visible states, keyboard focus and activation on Retry, screen-reader announcements, and the scroll reset after refresh.
 
 ### Native Testing
 
@@ -102,7 +104,7 @@ I couldn't test the React Native app because I don't have an iOS or Android simu
 
 I tested the shared screen and refresh behavior on web, but native pull-to-refresh still needs to be tested on a device.
 
-On native, the list uses `StackRootFlatList` for pull-to-refresh, while web uses a Refresh button. Both use the same refresh logic.
+On native, `StackRootFlatList` scrolls within the stack screen and supports a downward pull from the top. Its refresh indicator is offset below the top bar. On web, the dashboard route provides a bounded scroll area and a Refresh button, with a text indicator during refresh. Both use the same refresh logic.
 
 ## 4. What I Would Improve With More Time
 
