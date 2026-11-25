@@ -94,6 +94,16 @@ These checks covered pagination, empty results, request errors, retries, and ref
 
 The final automated checks ran outside the browser. I would still verify the visible states, keyboard navigation, screen-reader announcements, and scroll position after refresh in the browser.
 
+### Accessibility Testing
+
+I tested the Payment History screen using VoiceOver on macOS.
+
+I confirmed that VoiceOver can read the payment description, amount, date, and status correctly.
+
+I also tested keyboard navigation and confirmed that VoiceOver recognizes Retry as a button and that I can activate it using the keyboard.
+
+With more time, I would test additional accessibility scenarios, especially automatic loading and error announcements.
+
 ### Native Testing
 
 I couldn't test the React Native app because I don't have an iOS or Android simulator available.
