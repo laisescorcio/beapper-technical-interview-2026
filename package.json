@@ -147,6 +147,7 @@
     "lucide-react-native": "1.47.0",
     "moment": "^2.30.1",
     "next": "^16.1.6",
+    "npm": "^11.21.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native-bottom-tabs": "^1.4.0",
