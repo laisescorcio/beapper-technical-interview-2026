@@ -12,3 +12,5 @@
 - Background refetch. I decided to disable `refetchOnWindowFocus` because the mock API adds a new payment when page 0 is requested again. This avoids unexpected changes when switching browser tabs.
 
 - Web scrolling. I want to check if `SmartyFlatList` works with the existing web layout before making any changes. If `onEndReached` doesn't work as expected, I'll adjust only what's necessary.
+
+- Expo configuration issue. The standard typecheck and lint command failed because Node tried to load `ConfigContext` as a runtime import, but it is only a TypeScript type. I investigated the issue with AI and verified that using `import type` fixes the loading error. The fix is a one-line change in `app.config.ts`, without changing the Nx or Expo setup.
