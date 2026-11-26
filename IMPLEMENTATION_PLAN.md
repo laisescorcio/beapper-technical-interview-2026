@@ -1,56 +1,58 @@
 # Payment history implementation plan
 
-Implement and verify one step at a time. The web and native routes already render `PaymentHistoryScreenView` from `libs/components`. Follow the Email address feature for library boundaries and import through public barrels. React Query owns the cache and request state, so the feature needs no Zustand store.
+The web and native routes use the shared `PaymentHistoryScreenView` from `libs/components`. The feature follows the Email address example for layer boundaries and imports through the public library exports. React Query owns the payment cache and request state.
 
-## 1. Add the paginated API query
+## 1. Fetch and paginate payments
 
-In `libs/api`, use `useDxApi()` and the generated `subscriberPaymentGet` method with `useInfiniteQuery`. Start at page 0 and send `size: 20` and `sort: ['paymentDate,desc']` on each request. A page with fewer than 20 items ends pagination. A full page advances to the next index, so a full final page needs one extra request to confirm the end.
+In `libs/api`, `useInfiniteQuery` calls the generated `subscriberPaymentGet` method. Requests start at page 0, ask for 20 items, and sort by `paymentDate,desc`. The fetch function checks that the response is an array.
 
-Disable automatic retries for this query so the mock's one-time errors reach the retry UI. Disable focus-triggered refetching for this query and keep the other defaults unless testing shows they interfere. An infinite-query refetch can reload all loaded pages when the data is stale, and every repeat page-0 request in the mock adds a payment. Disabling the focus trigger keeps switching browser tabs from changing the list.
+A page with fewer than 20 entries ends pagination. A full page advances to the next index, so a full final page needs one extra request. The page size check uses the original API response before individual entries are filtered. Automatic retries and refetching on window focus are disabled for this query.
 
-**Review check.** Verify the first request parameters and that a short or empty page stops pagination.
+**Review check.** Confirm the first request parameters and verify that a short or empty page stops pagination.
 
-## 2. Add page-zero refresh
+## 2. Refresh from page 0
 
-In `libs/api`, use a React Query mutation that calls the same page-fetching function for page 0. The mutation gives refresh its own loading and error state. The infinite query's regular `refetch()` reloads all loaded pages, while manual refresh needs a single request. On success, replace the infinite-query cache in one write with the new first page and `pageParams: [0]`. This starts pagination again at page 1 and avoids mixing pages from before and after a new payment shifts the boundaries. Keep the existing cache if refresh fails.
+A React Query mutation uses the same fetch function to request only page 0. On success, it replaces the cached pages with the new first page and `pageParams: [0]`. The list returns to the top and the next request is for page 1. A failed refresh leaves the cache intact.
 
-**Review check.** With two pages loaded, verify that refresh issues only a page-0 request and replaces both pages on success. Force a failed refresh with a test stub because the built-in scenarios do not fail a refresh after a successful load. Verify that cached rows stay visible and that refresh can be retried.
+**Review check.** With two pages loaded, confirm that Refresh requests only page 0, returns the list to the top, and resumes pagination at page 1.
 
-## 3. Wire the controller and screen behavior
+## 3. Map payments and handle list actions
 
-Expose flattened payments, request states, and actions in `libs/api-controller`. In `libs/ui-api-interaction`, allow end-of-list loading only when `hasNextPage` is true, no fetch or manual refresh is active, and there is no next-page error. Prevent overlapping refresh and pagination requests. Keep initial **Retry** and footer **Retry** as separate actions. The footer calls `fetchNextPage` explicitly so it retries the failed page while automatic pagination is paused. Share the refresh handler between platforms.
+The API controller flattens the loaded pages, filters invalid entries, and maps the remaining DTOs to the `Payment` model in `core`. It exposes the payments, request states, and actions to the interaction layer.
 
-**Review check.** Repeated scroll events during a request produce a single fetch. After a next-page failure, scrolling issues no further requests until the user retries. Footer **Retry** requests the failed page without reloading page 0, and scrolling can resume after it succeeds.
+The interaction layer checks for an active request when the user scrolls, retries, or refreshes. The initial Retry requests the first page again. The footer Retry requests the failed next page. Automatic pagination pauses after a next-page error until Retry succeeds.
 
-## 4. Render rows and verify web scrolling
+**Review check.** Confirm that repeated actions during a request do not start overlapping requests and that a pagination retry requests the failed page.
 
-Use `SmartyFlatList` in the shared screen and render payments in the API's order. Show description, amount, date, and status. Use stable payment IDs where available, `SmartyPrice` for major-unit amounts, `SmartyDate` for dates, and `paymentHistoryStrings` for readable status labels and missing-value copy.
+## 4. Render the payment list
 
-`SmartyFlatList` forwards `onEndReached`. Verify it in the browser with the first 20 real mock rows in the current dashboard layout before changing the layout. If the browser is scrolling the document and the list never gets the scroll events it needs, make the smallest scroll-viewport adjustment local to Payment history and repeat the check.
+`SmartyFlatList` renders payments in API order and uses payment IDs as keys where available. `PaymentItem` shows description and amount on the first line, with date and a labeled status badge below. The row uses the project's design tokens, `SmartyDate` and `SmartyPrice` for formatting, and shared language strings for labels and missing values.
 
-**Review check.** Confirm that only page 0 loads initially, then scroll near the end and confirm that page 1 loads. Check a fractional amount such as £3.50, all four statuses, and readable fallbacks for missing fields.
+**Review check.** Verify the amount, date, all four status labels, and fallbacks for fields that are unavailable.
 
-## 5. Render loading, empty, and retry states
+## 5. Show loading, empty, and error states
 
-Use `isPending` for the list's initial skeletons and `isFetchingNextPage` for footer skeletons. Show the empty message after a successful empty first page. Give the initial error its own **Retry**. Show a pagination error and **Retry** in the footer, and offer retry for a failed refresh. Keep existing rows visible during both of those failures. Reuse the shared skeleton and button components.
+The initial load and refresh show the shared skeleton rows in place of the list. Pagination shows a skeleton in the footer and keeps the loaded payments visible. An empty result shows a receipt icon and a message.
 
-**Review check.** Verify screen-reader reading order within each row, text labels for all statuses, loading and error announcements, and that decorative skeletons are skipped. Check keyboard access, focus visibility, and clear button names on web.
+First-page and pagination errors use `SmartyAlertPanel` with a compact Retry button. A refresh failure brings back the cached rows and offers Retry above the list. The web buttons have accessible names and visible keyboard focus.
 
-## 6. Connect the platform refresh triggers
+**Review check.** Verify skeleton placement, the empty state, and each retry action. Check keyboard access and the reading order of the payment fields.
 
-On native, pass the existing `StackRootFlatList` as the shared screen's list renderer using the `SmartyFlatListRenderer` contract. Reuse its pull-to-refresh control and top-bar inset, and drive its indicator from refresh state. On web, keep the existing route wrapper and show a **Refresh** button, using a small `.web.tsx` adapter if needed. Keep the list contents, states, and refresh handler shared.
+## 6. Connect the web controls
 
-**Review check.** Verify that scrolling loads more payments on both platforms. Trigger native pull-to-refresh and web **Refresh** without reloading the app. After loading several pages, confirm that refresh shows the new payment at the top, replaces the loaded pages, and the next scroll requests page 1. Verify that a refresh failure keeps the rows visible and the action can be retried.
+The web route limits the list height so pagination responds to scrolling inside the list. The Refresh button appears when there are payments and gives way to Retry if refresh fails. The header Back button uses `StackRootView`'s page-level callback to open `/dashboard/account`, including after a direct visit.
 
-## 7. Verify mock scenarios and run submission checks
+**Review check.** Scroll within the list to load the next page. Open Payment History directly and confirm that Back opens Account.
 
-Use `NEXT_PUBLIC_MOCK_API_SCENARIO` on web and `EXPO_PUBLIC_MOCK_API_SCENARIO` on native.
+## 7. Verify the web scenarios and workspace checks
+
+Set `NEXT_PUBLIC_MOCK_API_SCENARIO` when starting the web app.
 
 | Scenario | Expected result |
 | --- | --- |
-| `default` | Before any refresh, pages 0–4 contain 100 payments and page 5 is empty. No further page is requested. |
-| `empty` | A successful page 0 shows the empty state and pagination stops. |
-| `error` | The first page fails visibly. Initial **Retry** requests page 0 and displays the payments on success. |
-| `next-page-error` | Each later page fails once. Existing rows stay visible, scrolling pauses pagination, and footer **Retry** requests the same page. |
+| `default` | On a fresh session, pages 0–4 contain 100 payments. Page 5 is empty and pagination stops. |
+| `empty` | Page 0 shows the empty state and pagination stops. |
+| `error` | The first request fails. Initial Retry loads page 0. |
+| `next-page-error` | Each later page fails once. Loaded rows stay visible, and footer Retry requests the failed page. |
 
-Run `npx nx run-many -t typecheck lint` from the project root and confirm zero errors and warnings. Update `NOTES.md` with decisions and trade-offs. If native testing is skipped, record that explicitly and describe the expected differences in the refresh gesture, indicator placement, and scroll container.
+Run `npx nx run-many -t typecheck lint --skip-nx-cache` on Node 22. See `NOTES.md` for the mock, browser, and VoiceOver checks that were carried out. The native app uses the shared view and was not run on a device or simulator.
