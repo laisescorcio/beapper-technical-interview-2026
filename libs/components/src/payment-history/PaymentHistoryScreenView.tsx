@@ -8,27 +8,14 @@ import {DateFormat, Payment, SmartyPrice} from '@smarty-app/core';
 import {en} from '@smarty-app/language';
 import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
 import {JSX, useRef} from 'react';
-import {FlatList, View, ViewProps} from 'react-native';
-
-interface PaymentHistoryScreenViewProps extends ViewProps {
-  showRefreshButton?: boolean;
-}
+import {FlatList, Platform, View} from 'react-native';
 
 /**
  * Main view for PaymentHistoryScreen.
  *
- * @param props Element properties.
  * @returns JSX.Element
  */
-export function PaymentHistoryScreenView(
-  props: PaymentHistoryScreenViewProps,
-): JSX.Element {
-  const {
-    testID = 'payment-history-screen-view',
-    showRefreshButton = false,
-    ...rest
-  } = props;
-
+export function PaymentHistoryScreenView(): JSX.Element {
   const {
     payments,
     isPending,
@@ -63,11 +50,11 @@ export function PaymentHistoryScreenView(
   }
 
   return (
-    <View testID={testID} {...rest}>
+    <View testID="payment-history-screen-view">
       <SmartyText aria-live="polite" className="text-foreground-secondary">
         {statusMessage}
       </SmartyText>
-      {showRefreshButton && payments.length > 0 && !isRefreshError && (
+      {Platform.OS === 'web' && payments.length > 0 && !isRefreshError && (
         <SmartySecondaryButton
           disabled={isPending || isRetryDisabled}
           onPress={handleRefresh}>
