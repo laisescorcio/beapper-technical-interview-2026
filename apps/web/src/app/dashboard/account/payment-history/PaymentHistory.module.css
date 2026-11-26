@@ -1,0 +1,10 @@
+.viewport [data-testid='payment-history-list'] {
+  /* Leave room for the dashboard padding, header, refresh controls and mobile navigation. */
+  max-height: calc(100dvh - 14rem);
+}
+
+.viewport button:focus-visible,
+.viewport [role='button']:focus-visible {
+  outline: 2px solid var(--color-foreground-accent);
+  outline-offset: -4px;
+}

@@ -47,6 +47,30 @@ export function mapSmartyDateToIsoString(
 }
 
 /**
+ * Normalizes a currency code or returns undefined if it is unsupported.
+ *
+ * @param currency - The currency code to normalize.
+ * @returns A supported currency or undefined.
+ */
+export function currencyOrUndefined(currency: unknown): Currency | undefined {
+  if (typeof currency !== 'string') {
+    return undefined;
+  }
+
+  const currencyLower = currency.trim().toLowerCase();
+  switch (currencyLower) {
+    case 'gbp':
+      return 'GBP';
+    case 'eur':
+      return 'EUR';
+    case 'usd':
+      return 'USD';
+    default:
+      return undefined;
+  }
+}
+
+/**
  * Maps a Currency DTO from the API to a Currency type used in the app. If the currency is missing or unrecognized, it defaults to 'GBP'.
  *
  * @param dto - The Currency DTO to map

@@ -1,4 +1,4 @@
-import {ConfigContext, ExpoConfig} from '@expo/config';
+import type {ConfigContext, ExpoConfig} from '@expo/config';
 
 /**
  * Builds the Expo config for the app.

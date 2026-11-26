@@ -162,6 +162,9 @@ export function createMockDxApiFetch(
       }
       if (method === 'PUT') {
         const edit = JSON.parse(String(init?.body ?? '{}')) as EditSubscriber;
+        if (edit.email === 'alert-test@example.com') {
+          return serverError('Mock: test the change email alert.');
+        }
         subscriber = applySubscriberEdit(subscriber, edit);
         return jsonResponse(200, subscriber);
       }

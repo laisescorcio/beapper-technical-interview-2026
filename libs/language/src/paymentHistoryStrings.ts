@@ -1,3 +1,22 @@
 export const paymentHistoryStrings = {
   paymentHistoryTitle: 'Payment history',
+  paymentHistoryLoadingMore: 'Loading more payments…',
+  paymentHistoryRefresh: 'Refresh',
+  paymentHistoryEmpty: 'No payments to show.',
+  paymentHistoryInitialError: 'We couldn’t load your payments.',
+  paymentHistoryNextPageError: 'We couldn’t load more payments.',
+  paymentHistoryRetry: 'Retry',
+  paymentHistoryRetryInitial: 'Retry loading payments',
+  paymentHistoryRetryNextPage: 'Retry loading more payments',
+  paymentHistoryRetryRefresh: 'Retry refreshing payments',
+  paymentHistoryMissingDescription: 'Payment',
+  paymentHistoryMissingAmount: 'Amount unavailable',
+  paymentHistoryMissingDate: 'Date unavailable',
+  paymentHistoryMissingStatus: 'Status unavailable',
+  paymentHistoryStatuses: {
+    PAID: 'Paid',
+    PENDING: 'Pending',
+    FAILED: 'Failed',
+    REFUNDED: 'Refunded',
+  },
 };
