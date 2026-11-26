@@ -7,8 +7,8 @@ import {
 import {DateFormat, Payment, SmartyPrice} from '@smarty-app/core';
 import {en} from '@smarty-app/language';
 import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
-import {JSX, useState} from 'react';
-import {View, ViewProps} from 'react-native';
+import {JSX, useRef} from 'react';
+import {FlatList, View, ViewProps} from 'react-native';
 
 interface PaymentHistoryScreenViewProps extends ViewProps {
   showRefreshButton?: boolean;
@@ -44,10 +44,11 @@ export function PaymentHistoryScreenView(
     onRefresh,
   } = usePaymentHistoryApiInteraction();
 
-  const [listVersion, setListVersion] = useState(0);
+  const listRef = useRef<FlatList<Payment>>(null);
   const handleRefresh = () => {
-    // Start at the top when the refreshed first page replaces the previous pages.
-    onRefresh(() => setListVersion((version) => version + 1));
+    onRefresh(() =>
+      listRef.current?.scrollToOffset({offset: 0, animated: false}),
+    );
   };
 
   const isRetryDisabled = isFetching || isRefreshing;
@@ -78,7 +79,7 @@ export function PaymentHistoryScreenView(
         aria-hidden={isPending || undefined}
         importantForAccessibility={isPending ? 'no-hide-descendants' : 'auto'}>
         <SmartyFlatList
-          key={listVersion}
+          ref={listRef}
           testID="payment-history-list"
           isLoading={isPending}
           data={payments}
