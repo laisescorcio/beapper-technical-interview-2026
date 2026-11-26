@@ -1,13 +1,10 @@
 export const paymentHistoryStrings = {
   paymentHistoryTitle: 'Payment history',
-  paymentHistoryLoading: 'Loading payments…',
   paymentHistoryLoadingMore: 'Loading more payments…',
   paymentHistoryRefresh: 'Refresh',
-  paymentHistoryRefreshing: 'Refreshing payments…',
   paymentHistoryEmpty: 'No payments to show.',
   paymentHistoryInitialError: 'We couldn’t load your payments.',
   paymentHistoryNextPageError: 'We couldn’t load more payments.',
-  paymentHistoryRefreshError: 'We couldn’t refresh your payments.',
   paymentHistoryRetry: 'Retry',
   paymentHistoryRetryInitial: 'Retry loading payments',
   paymentHistoryRetryNextPage: 'Retry loading more payments',
