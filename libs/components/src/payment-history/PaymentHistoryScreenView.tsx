@@ -1,5 +1,8 @@
+import {ReceiptText} from '@smarty-app/assets';
 import {SmartyAlertPanel, SmartyFlatList} from '@smarty-app/controls';
 import {
+  SmartyIcon,
+  SmartyIconSize,
   SmartySecondaryButton,
   SmartySkeletonLoading,
   SmartyTertiaryButton,
@@ -86,11 +89,18 @@ export function PaymentHistoryScreenView(): JSX.Element {
                 disabled={isRetryDisabled}
               />
             ) : (
-              <SmartyText
-                aria-live="polite"
-                className="text-foreground-primary">
-                {en.paymentHistoryEmpty}
-              </SmartyText>
+              <View className="min-h-48 items-center justify-center smarty-gap-m px-4 py-8">
+                <View
+                  aria-hidden
+                  importantForAccessibility="no-hide-descendants">
+                  <SmartyIcon icon={ReceiptText} size={SmartyIconSize.Large} />
+                </View>
+                <SmartyText
+                  aria-live="polite"
+                  className="text-center text-foreground-primary">
+                  {en.paymentHistoryEmpty}
+                </SmartyText>
+              </View>
             )
           }
           ListFooterComponent={
