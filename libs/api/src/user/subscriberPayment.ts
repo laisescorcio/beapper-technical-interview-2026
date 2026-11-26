@@ -22,6 +22,10 @@ function useSubscriberPaymentPageFetchFn() {
       sort: ['paymentDate,desc'],
     });
 
+    if (!Array.isArray(response.data)) {
+      throw new Error('Invalid payment history response: expected an array.');
+    }
+
     return response.data;
   };
 }
