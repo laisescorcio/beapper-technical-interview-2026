@@ -8,7 +8,12 @@ import {
   SmartyTertiaryButton,
   SmartyText,
 } from '@smarty-app/controls-basic';
-import {DateFormat, Payment, SmartyPrice} from '@smarty-app/core';
+import {
+  DateFormat,
+  Payment,
+  PaymentStatus,
+  SmartyPrice,
+} from '@smarty-app/core';
 import {en} from '@smarty-app/language';
 import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
 import {JSX} from 'react';
@@ -37,13 +42,15 @@ export function PaymentHistoryScreenView(): JSX.Element {
 
   const isListLoading = isPending || isRefreshing;
   const isRetryDisabled = isFetching || isRefreshing;
+  const showRefresh =
+    Platform.OS === 'web' && payments.length > 0 && !isRefreshError;
 
   return (
     <View testID="payment-history-screen-view">
       <SmartyText aria-live="polite" className="text-foreground-secondary">
         {isFetchingNextPage ? en.paymentHistoryLoadingMore : ''}
       </SmartyText>
-      {Platform.OS === 'web' && payments.length > 0 && !isRefreshError && (
+      {showRefresh && (
         <SmartyTertiaryButton
           className="self-end"
           textClassName="px-3 py-2"
@@ -51,6 +58,9 @@ export function PaymentHistoryScreenView(): JSX.Element {
           onPress={() => onRefresh()}>
           {en.paymentHistoryRefresh}
         </SmartyTertiaryButton>
+      )}
+      {Platform.OS === 'web' && isListLoading && !showRefresh && (
+        <View aria-hidden className="h-9" />
       )}
       <View
         className="flex-1"
@@ -62,6 +72,8 @@ export function PaymentHistoryScreenView(): JSX.Element {
           testID="payment-history-list"
           contentContainerClassName="smarty-pb-2xl"
           isLoading={isListLoading}
+          skeletonClassName="h-28 my-0"
+          skeletonContainerClassName="smarty-gap-m"
           data={payments}
           ListHeaderComponent={
             isRefreshError ? (
@@ -106,7 +118,7 @@ export function PaymentHistoryScreenView(): JSX.Element {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View aria-hidden importantForAccessibility="no-hide-descendants">
-                <SmartySkeletonLoading className="my-2 h-20 w-full" />
+                <SmartySkeletonLoading className="h-28 w-full" />
               </View>
             ) : isNextPageError ? (
               <PaymentLoadError
@@ -158,6 +170,29 @@ function PaymentLoadError({
   );
 }
 
+const paymentItemClassName =
+  'min-h-28 justify-center smarty-gap-s smarty-px-l smarty-py-xl border-b border-background-tertiary';
+const paymentItemLineClassName =
+  'flex-row items-center justify-between smarty-gap-xl';
+
+const neutralStatusStyle = {
+  background: 'bg-background-tertiary',
+  text: 'text-foreground-secondary',
+};
+
+const paymentStatusStyles: Record<
+  PaymentStatus,
+  {background: string; text: string}
+> = {
+  PAID: {background: 'bg-background-accent', text: 'text-brand-slate-800'},
+  PENDING: {background: 'bg-background-promo', text: 'text-brand-slate-800'},
+  FAILED: {
+    background: 'bg-background-primary border border-stroke-medium',
+    text: 'text-foreground-warning',
+  },
+  REFUNDED: neutralStatusStyle,
+};
+
 function PaymentItem({payment}: {payment: Payment}): JSX.Element {
   const formattedDate =
     payment.date?.formatDate(DateFormat.DayShortMonthYear) ??
@@ -167,22 +202,32 @@ function PaymentItem({payment}: {payment: Payment}): JSX.Element {
     ? new SmartyPrice(payment.price).formatPrice(true)
     : en.paymentHistoryMissingAmount;
 
+  const {status} = payment;
+  const statusStyle = status ? paymentStatusStyles[status] : neutralStatusStyle;
+
   return (
-    <View className="smarty-gap-xs border-b border-background-tertiary py-4">
-      <SmartyText className="smarty-heading-xs text-foreground-primary">
-        {payment.description ?? en.paymentHistoryMissingDescription}
-      </SmartyText>
-      <SmartyText className="text-foreground-primary">
-        {formattedAmount}
-      </SmartyText>
-      <SmartyText className="text-foreground-secondary">
-        {formattedDate}
-      </SmartyText>
-      <SmartyText className="text-foreground-secondary">
-        {payment.status
-          ? en.paymentHistoryStatuses[payment.status]
-          : en.paymentHistoryMissingStatus}
-      </SmartyText>
+    <View className={paymentItemClassName}>
+      <View className={paymentItemLineClassName}>
+        <SmartyText className="min-w-0 flex-1 smarty-body-l font-semibold text-foreground-primary">
+          {payment.description ?? en.paymentHistoryMissingDescription}
+        </SmartyText>
+        <SmartyText className="text-right smarty-body-l font-semibold text-foreground-primary">
+          {formattedAmount}
+        </SmartyText>
+      </View>
+      <View className={paymentItemLineClassName}>
+        <SmartyText className="min-w-0 flex-1 smarty-caption-l text-foreground-secondary">
+          {formattedDate}
+        </SmartyText>
+        <View
+          className={`min-h-6 justify-center smarty-rounded-l smarty-px-m ${statusStyle.background}`}>
+          <SmartyText className={`smarty-caption-l ${statusStyle.text}`}>
+            {status
+              ? en.paymentHistoryStatuses[status]
+              : en.paymentHistoryMissingStatus}
+          </SmartyText>
+        </View>
+      </View>
     </View>
   );
 }
