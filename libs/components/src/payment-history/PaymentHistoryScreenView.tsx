@@ -97,7 +97,9 @@ export function PaymentHistoryScreenView(): JSX.Element {
 
   return (
     <View testID="payment-history-screen-view">
-      <SmartyText aria-live="polite" className="text-foreground-secondary">
+      <SmartyText
+        aria-live="polite"
+        className="text-foreground-secondary sr-only">
         {isFetchingNextPage ? en.paymentHistoryLoadingMore : ''}
       </SmartyText>
       {showRefresh && (
