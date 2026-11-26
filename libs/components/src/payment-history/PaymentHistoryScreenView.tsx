@@ -1,4 +1,4 @@
-import {SmartyFlatList, SmartyFlatListRenderer} from '@smarty-app/controls';
+import {SmartyFlatList} from '@smarty-app/controls';
 import {
   SmartySecondaryButton,
   SmartySkeletonLoading,
@@ -11,7 +11,6 @@ import {JSX, useState} from 'react';
 import {View, ViewProps} from 'react-native';
 
 interface PaymentHistoryScreenViewProps extends ViewProps {
-  List?: SmartyFlatListRenderer;
   showRefreshButton?: boolean;
 }
 
@@ -26,7 +25,6 @@ export function PaymentHistoryScreenView(
 ): JSX.Element {
   const {
     testID = 'payment-history-screen-view',
-    List = SmartyFlatList,
     showRefreshButton = false,
     ...rest
   } = props;
@@ -79,13 +77,11 @@ export function PaymentHistoryScreenView(
         className="flex-1"
         aria-hidden={isPending || undefined}
         importantForAccessibility={isPending ? 'no-hide-descendants' : 'auto'}>
-        <List
+        <SmartyFlatList
           key={listVersion}
           testID="payment-history-list"
           isLoading={isPending}
           data={payments}
-          onRefresh={showRefreshButton ? undefined : handleRefresh}
-          refreshing={isRefreshing}
           ListHeaderComponent={
             isRefreshError ? (
               <PaymentRetry
@@ -175,6 +171,7 @@ function PaymentItem({payment}: {payment: Payment}): JSX.Element {
     date && Number.isFinite(date.getTime())
       ? new SmartyDate(date).formatDate(DateFormat.DayShortMonthYear)
       : en.paymentHistoryMissingDate;
+
   const formattedAmount =
     typeof payment.amount === 'number' &&
     Number.isFinite(payment.amount) &&

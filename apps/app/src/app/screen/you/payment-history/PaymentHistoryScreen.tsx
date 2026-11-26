@@ -1,7 +1,7 @@
 import {PaymentHistoryScreenView} from '@smarty-app/components';
 import {JSX} from 'react';
 
-import {StackRootFlatList} from '../../../component/common/StackRootFlatList';
+import {StackRootView} from '../../../component/common/StackRootView';
 
 /**
  * Payment history screen.
@@ -10,10 +10,8 @@ import {StackRootFlatList} from '../../../component/common/StackRootFlatList';
  */
 export function PaymentHistoryScreen(): JSX.Element {
   return (
-    <PaymentHistoryScreenView
-      className="flex-1"
-      testID="payment-history-screen"
-      List={StackRootFlatList}
-    />
+    <StackRootView testID="payment-history-screen">
+      <PaymentHistoryScreenView />
+    </StackRootView>
   );
 }

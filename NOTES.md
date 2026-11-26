@@ -20,9 +20,7 @@ Since the API doesn't return the total number of payments, I use the number of i
 
 Both web and native use the same screen in `libs/components`.
 
-On native, I used `StackRootFlatList` to support pull-to-refresh. On web, I added a Refresh button so users can update the list without reloading the entire page.
-
-Both platforms share the same refresh logic.
+On web, I added a Refresh button so users can update the list without reloading the entire page.
 
 I chose a mutation for refresh because the regular `refetch()` from `useInfiniteQuery` can reload all previously loaded pages.
 
@@ -104,21 +102,11 @@ I also tested keyboard navigation and confirmed that VoiceOver recognizes Retry 
 
 With more time, I would test additional accessibility scenarios, especially automatic loading and error announcements.
 
-### Native Testing
+### Platform Scope
 
-I couldn't test the React Native app because I don't have an iOS or Android simulator available.
+I implemented and tested this challenge on web. The native app still uses the shared screen, and native behavior was not tested.
 
-I tested the shared screen and refresh behavior on web, but native pull-to-refresh still needs to be tested on a device.
-
-On native, I used `StackRootFlatList` to support pull-to-refresh. On web, I added a Refresh button. Both platforms use the same refresh logic.
-
-### Native Testing
-
-I couldn't test the React Native app because I don't have an iOS or Android simulator available.
-
-I tested the shared screen and refresh behavior on web, but native pull-to-refresh still needs to be tested on a device.
-
-On native, `StackRootFlatList` scrolls within the stack screen and supports a downward pull from the top. Its refresh indicator is offset below the top bar. On web, the dashboard route provides a bounded scroll area and a Refresh button, with a text indicator during refresh. Both use the same refresh logic.
+On web, the dashboard route provides a bounded scroll area and a Refresh button, with a text indicator during refresh. A native implementation would let users pull down from the top of the list inside the stack screen and show a refresh indicator below the top bar.
 
 ## 4. What I Would Improve With More Time
 
