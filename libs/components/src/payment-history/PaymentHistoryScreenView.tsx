@@ -75,24 +75,25 @@ export function PaymentHistoryScreenView(): JSX.Element {
     </View>
   );
 
-  let paginationFooter: JSX.Element | null = null;
-  if (isFetchingNextPage) {
-    paginationFooter = (
-      <View aria-hidden importantForAccessibility="no-hide-descendants">
-        <SmartySkeletonLoading className="h-28 w-full" />
-      </View>
-    );
-  } else if (isNextPageError) {
-    paginationFooter = (
-      <PaymentLoadError
-        className="py-4"
-        message={en.paymentHistoryNextPageError}
-        label={en.paymentHistoryRetryNextPage}
-        onRetry={onRetryNextPage}
-        disabled={isRetryDisabled}
-      />
-    );
-  }
+  const renderPaginationFooter = () => {
+    if (isFetchingNextPage) {
+      return <SmartySkeletonLoading className="h-28 w-full" />;
+    }
+
+    if (isNextPageError) {
+      return (
+        <PaymentLoadError
+          className="py-4"
+          message={en.paymentHistoryNextPageError}
+          label={en.paymentHistoryRetryNextPage}
+          onRetry={onRetryNextPage}
+          disabled={isRetryDisabled}
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
     <View testID="payment-history-screen-view">
@@ -128,7 +129,7 @@ export function PaymentHistoryScreenView(): JSX.Element {
           onEndReachedThreshold={0.2}
           renderItem={({item}) => <PaymentItem payment={item} />}
           ListEmptyComponent={emptyContent}
-          ListFooterComponent={paginationFooter}
+          ListFooterComponent={renderPaginationFooter()}
         />
       </View>
     </View>
