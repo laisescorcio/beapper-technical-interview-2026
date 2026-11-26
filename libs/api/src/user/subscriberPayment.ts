@@ -8,8 +8,8 @@ import {
 
 import {useDxApi} from '../dxApiWrapper';
 
-export const subscriberPaymentQueryKey = ['subscriberPayment'];
-export const subscriberPaymentRefreshMutationKey = ['subscriberPaymentRefresh'];
+const subscriberPaymentQueryKey = ['subscriberPayment'];
+const subscriberPaymentRefreshMutationKey = ['subscriberPaymentRefresh'];
 const pageSize = 20;
 
 const paymentStatuses = ['PAID', 'PENDING', 'FAILED', 'REFUNDED'];
@@ -93,4 +93,23 @@ export function useSubscriberPaymentRefreshMutation() {
       );
     },
   });
+}
+
+/**
+ * Returns a check that reads payment request activity when called.
+ *
+ * @returns A function that checks for an active payment query or refresh.
+ */
+export function useSubscriberPaymentRequestActivity(): () => boolean {
+  const queryClient = useQueryClient();
+
+  return () =>
+    queryClient.isFetching({
+      queryKey: subscriberPaymentQueryKey,
+      exact: true,
+    }) > 0 ||
+    queryClient.isMutating({
+      mutationKey: subscriberPaymentRefreshMutationKey,
+      exact: true,
+    }) > 0;
 }

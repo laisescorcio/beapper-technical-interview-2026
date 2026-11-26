@@ -6,29 +6,29 @@ import {usePaymentHistory} from '@smarty-app/api-controller';
  * @returns Payment history state and guarded screen handlers.
  */
 export function usePaymentHistoryApiInteraction() {
-  const {refetch, fetchNextPage, refresh, isRequestActive, ...state} =
+  const {retryInitial, loadNextPage, refresh, isRequestActive, ...state} =
     usePaymentHistory();
 
   return {
     ...state,
     onEndReached: () => {
       if (state.hasNextPage && !state.isNextPageError && !isRequestActive()) {
-        void fetchNextPage();
+        loadNextPage();
       }
     },
     onRetryNextPage: () => {
       if (state.hasNextPage && state.isNextPageError && !isRequestActive()) {
-        void fetchNextPage();
+        loadNextPage();
       }
     },
     onRetryInitial: () => {
       if (state.isInitialError && !isRequestActive()) {
-        void refetch();
+        retryInitial();
       }
     },
     onRefresh: (onSuccess?: () => void) => {
       if (!isRequestActive()) {
-        refresh(undefined, {onSuccess});
+        refresh(onSuccess);
       }
     },
   };

@@ -1,12 +1,10 @@
 import {
   isPaymentDto,
-  subscriberPaymentQueryKey,
-  subscriberPaymentRefreshMutationKey,
   useSubscriberPaymentQuery,
   useSubscriberPaymentRefreshMutation,
+  useSubscriberPaymentRequestActivity,
 } from '@smarty-app/api';
 import {mapPaymentDtoToPayment} from '@smarty-app/core';
-import {useQueryClient} from '@tanstack/react-query';
 import {useMemo} from 'react';
 
 /**
@@ -15,9 +13,9 @@ import {useMemo} from 'react';
  * @returns Payments in API order, request states, and actions.
  */
 export function usePaymentHistory() {
-  const queryClient = useQueryClient();
+  const isRequestActive = useSubscriberPaymentRequestActivity();
   const query = useSubscriberPaymentQuery();
-  const refresh = useSubscriberPaymentRefreshMutation();
+  const refreshMutation = useSubscriberPaymentRefreshMutation();
 
   const payments = useMemo(
     () =>
@@ -36,20 +34,17 @@ export function usePaymentHistory() {
     isFetchingNextPage: query.isFetchingNextPage,
     isInitialError: query.isLoadingError,
     isNextPageError: query.isFetchNextPageError,
-    isRefreshing: refresh.isPending,
-    isRefreshError: refresh.isError,
-    refetch: query.refetch,
-    fetchNextPage: query.fetchNextPage,
-    refresh: refresh.mutate,
-    // Read the cache at event time, before React has rendered the new state.
-    isRequestActive: () =>
-      queryClient.isFetching({
-        queryKey: subscriberPaymentQueryKey,
-        exact: true,
-      }) > 0 ||
-      queryClient.isMutating({
-        mutationKey: subscriberPaymentRefreshMutationKey,
-        exact: true,
-      }) > 0,
+    isRefreshing: refreshMutation.isPending,
+    isRefreshError: refreshMutation.isError,
+    retryInitial: () => {
+      void query.refetch();
+    },
+    loadNextPage: () => {
+      void query.fetchNextPage();
+    },
+    refresh: (onSuccess?: () => void) => {
+      refreshMutation.mutate(undefined, {onSuccess});
+    },
+    isRequestActive,
   };
 }
