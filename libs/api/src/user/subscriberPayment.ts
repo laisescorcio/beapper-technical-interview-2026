@@ -12,6 +12,31 @@ export const subscriberPaymentQueryKey = ['subscriberPayment'];
 export const subscriberPaymentRefreshMutationKey = ['subscriberPaymentRefresh'];
 const pageSize = 20;
 
+const paymentStatuses = ['PAID', 'PENDING', 'FAILED', 'REFUNDED'];
+
+/**
+ * Checks the optional fields of an entry from the payment history API.
+ *
+ * @param payment - The entry to check.
+ * @returns Whether the entry can be mapped as a payment.
+ */
+export function isPaymentDto(
+  payment: Payment | null | undefined,
+): payment is Payment {
+  if (!payment || typeof payment !== 'object' || Array.isArray(payment)) {
+    return false;
+  }
+
+  const {id, description, paymentDate, currency, amount, status} = payment;
+  return (
+    [id, description, paymentDate, currency].every(
+      (value) => value === undefined || typeof value === 'string',
+    ) &&
+    (amount === undefined || Number.isFinite(amount)) &&
+    (status === undefined || paymentStatuses.includes(status))
+  );
+}
+
 function useSubscriberPaymentPageFetchFn() {
   const dxApi = useDxApi();
 

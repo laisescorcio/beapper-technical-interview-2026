@@ -1,9 +1,11 @@
 import {
+  isPaymentDto,
   subscriberPaymentQueryKey,
   subscriberPaymentRefreshMutationKey,
   useSubscriberPaymentQuery,
   useSubscriberPaymentRefreshMutation,
 } from '@smarty-app/api';
+import {mapPaymentDtoToPayment} from '@smarty-app/core';
 import {useQueryClient} from '@tanstack/react-query';
 import {useMemo} from 'react';
 
@@ -17,7 +19,14 @@ export function usePaymentHistory() {
   const query = useSubscriberPaymentQuery();
   const refresh = useSubscriberPaymentRefreshMutation();
 
-  const payments = useMemo(() => query.data?.pages.flat() ?? [], [query.data]);
+  const payments = useMemo(
+    () =>
+      query.data?.pages
+        .flat()
+        .filter(isPaymentDto)
+        .map(mapPaymentDtoToPayment) ?? [],
+    [query.data],
+  );
 
   return {
     payments,

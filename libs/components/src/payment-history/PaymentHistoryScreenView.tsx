@@ -4,7 +4,7 @@ import {
   SmartySkeletonLoading,
   SmartyText,
 } from '@smarty-app/controls-basic';
-import {Currency, DateFormat, SmartyDate, SmartyPrice} from '@smarty-app/core';
+import {DateFormat, Payment, SmartyPrice} from '@smarty-app/core';
 import {en} from '@smarty-app/language';
 import {usePaymentHistoryApiInteraction} from '@smarty-app/ui-api-interaction';
 import {JSX, useState} from 'react';
@@ -161,31 +161,19 @@ function PaymentRetry({
   );
 }
 
-type Payment = ReturnType<
-  typeof usePaymentHistoryApiInteraction
->['payments'][number];
-
 function PaymentItem({payment}: {payment: Payment}): JSX.Element {
-  const date = payment.paymentDate ? new Date(payment.paymentDate) : undefined;
   const formattedDate =
-    date && Number.isFinite(date.getTime())
-      ? new SmartyDate(date).formatDate(DateFormat.DayShortMonthYear)
-      : en.paymentHistoryMissingDate;
+    payment.date?.formatDate(DateFormat.DayShortMonthYear) ??
+    en.paymentHistoryMissingDate;
 
-  const formattedAmount =
-    typeof payment.amount === 'number' &&
-    Number.isFinite(payment.amount) &&
-    payment.currency
-      ? new SmartyPrice({
-          value: payment.amount,
-          currency: payment.currency as Currency,
-        }).formatPrice(true)
-      : en.paymentHistoryMissingAmount;
+  const formattedAmount = payment.price
+    ? new SmartyPrice(payment.price).formatPrice(true)
+    : en.paymentHistoryMissingAmount;
 
   return (
     <View className="smarty-gap-xs border-b border-background-tertiary py-4">
       <SmartyText className="smarty-heading-xs text-foreground-primary">
-        {payment.description?.trim() || en.paymentHistoryMissingDescription}
+        {payment.description ?? en.paymentHistoryMissingDescription}
       </SmartyText>
       <SmartyText className="text-foreground-primary">
         {formattedAmount}
@@ -194,8 +182,9 @@ function PaymentItem({payment}: {payment: Payment}): JSX.Element {
         {formattedDate}
       </SmartyText>
       <SmartyText className="text-foreground-secondary">
-        {(payment.status && en.paymentHistoryStatuses[payment.status]) ||
-          en.paymentHistoryMissingStatus}
+        {payment.status
+          ? en.paymentHistoryStatuses[payment.status]
+          : en.paymentHistoryMissingStatus}
       </SmartyText>
     </View>
   );
