@@ -54,18 +54,6 @@ During testing, I noticed that the list was loading all pages automatically beca
 
 I added a height limit only to the Payment History page, so the list has its own scroll area. This allows pagination to load more payments when the user scrolls near the end.
 
-### Refresh Error Testing
-
-I modified the existing mock API to add a new `refresh-error` scenario, which was not included in the original README.
-
-This allows me to test what happens when a refresh fails. The initial request works normally, but the second request for page 0 fails once. The existing payments stay visible, and Retry works after the failure.
-
-I can test this scenario by running:
-
-```bash
-NEXT_PUBLIC_MOCK_API_SCENARIO=refresh-error npx nx dev web
-```
-
 ### Refresh Button Visibility
 
 On web, Refresh appears once payments load. An empty response shows only the empty message, and an initial load error offers Retry.
@@ -86,7 +74,7 @@ After this change, the standard typecheck and lint command passed without additi
 
 I ran `npx nx run-many -t typecheck lint --skip-nx-cache` on Node 22, and all 25 projects passed without TypeScript or ESLint errors.
 
-I also checked all five mock scenarios (`default`, `empty`, `error`, `next-page-error`, and `refresh-error`) using the mock API, React Query, and the interaction handlers.
+I also checked the four payment history mock scenarios (`default`, `empty`, `error`, and `next-page-error`) using the mock API, React Query, and the interaction handlers.
 
 These checks covered pagination, empty results, request errors, retries, and refresh behavior.
 

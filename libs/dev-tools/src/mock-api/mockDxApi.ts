@@ -19,17 +19,14 @@ const COMPONENT = 'mockDxApi';
  * - `error`: the first request for payment history fails; retrying succeeds.
  * - `next-page-error`: the first request for each later page of payment
  *   history fails; retrying succeeds.
- * - `refresh-error`: the second page-0 request fails; retrying succeeds.
  */
-export type MockApiScenario =
-  'default' | 'empty' | 'error' | 'next-page-error' | 'refresh-error';
+export type MockApiScenario = 'default' | 'empty' | 'error' | 'next-page-error';
 
 const SCENARIOS: ReadonlyArray<MockApiScenario> = [
   'default',
   'empty',
   'error',
   'next-page-error',
-  'refresh-error',
 ];
 
 /** Long enough to see loading states, short enough not to get in the way. */
@@ -131,9 +128,6 @@ export function createMockDxApiFetch(
       if (scenario === 'error' && firstPageRequests === 1) {
         return serverError('Mock: payment history failed to load.');
       }
-      if (scenario === 'refresh-error' && firstPageRequests === 2) {
-        return serverError('Mock: payment history failed to refresh.');
-      }
       if (firstPageRequests > 1 && scenario !== 'empty') {
         payments.unshift(createNewMockPayment(firstPageRequests));
       }
@@ -168,6 +162,9 @@ export function createMockDxApiFetch(
       }
       if (method === 'PUT') {
         const edit = JSON.parse(String(init?.body ?? '{}')) as EditSubscriber;
+        if (edit.email === 'alert-test@example.com') {
+          return serverError('Mock: test the change email alert.');
+        }
         subscriber = applySubscriberEdit(subscriber, edit);
         return jsonResponse(200, subscriber);
       }
